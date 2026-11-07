@@ -3,6 +3,7 @@
 A personal job-search pipeline: **rules do the sorting, an LLM does only the judging.** A hybrid AI-assisted pipeline, not an autonomous agent.
 
 > **Design principle**
+>
 > Use deterministic logic for decisions with explicit rules, and reserve LLM calls for contextual judgments that cannot be reliably expressed as simple filters. Keep decisions auditable, preserve state across runs, and feed human reviews back into the system.
 
 I'm a Senior Product Manager looking for roles across Europe. Vacancies are scattered over LinkedIn, company career pages and Telegram channels, reposted by agencies and published in several countries. Lodestar collects them, throws away what a rule can reject, remembers what I have already seen, and prepares the remaining vacancies in batches for LLM evaluation. I paste each batch into a Claude Project, which returns a verdict with a reason, and the program reads the answers back.
@@ -53,7 +54,7 @@ Three independent measurements, taken from the pipeline's own logs. They cover d
 | Already in tracker | 222 | 1 |
 | Already seen in earlier runs (memory) | **31 prepared for LLM evaluation** | 191 |
 
-Rules and deduplication removed 1,206 (84%), memory removed 192 (13%), and the remaining 31 (2%) were new and prepared for LLM evaluation.
+Rules and deduplication removed 1,206 (84%), memory removed 192 (13%), and the remaining 31 (2%) were new vacancies prepared for the next, manual LLM-evaluation step.
 
 **2. Repeats, eight collections (4–7 Nov 2026)**
 - 7,661 listings (each vacancy counted once per collection) → 4,086 unique vacancies
@@ -67,7 +68,7 @@ Time saved has not been measured yet. I plan to compare end-to-end processing ti
 
 ## Lessons
 
-- **Rules need audit.** Two broad title rules (`platform`, `lead`) were removing roles close to my experience. I found this by reading what the rules rejected, removed both rules and re-scored the affected vacancies. *(Result of the re-scoring: not measured yet.)*
+- **Rules need audit.** Two broad title rules (`platform` and `lead`) were removing roles close to my experience. I found this by reviewing rejected vacancies, removed the broad patterns (a narrower `lead product` rule remains) and reprocessed the affected listings. The impact of these changes has not been measured yet.
 - **Collection must be incremental.** A long LinkedIn run that hits rate limits (HTTP 429) used to lose everything. Vacancies are now written to a checkpoint file as they are collected, and Ctrl+C processes what is already there.
 - **Persistent memory prevents repeated work.** Almost half of the vacancies in a four-day window were repeats. Without memory, I would re-read them.
 

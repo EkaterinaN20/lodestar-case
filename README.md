@@ -3,7 +3,6 @@
 A personal job-search pipeline: **rules do the sorting, an LLM does only the judging.** A hybrid AI-assisted pipeline, not an autonomous agent.
 
 > **Design principle**
-> 
 > Use deterministic logic for decisions with explicit rules, and reserve LLM calls for contextual judgments that cannot be reliably expressed as simple filters. Keep decisions auditable, preserve state across runs, and feed human reviews back into the system.
 
 I'm a Senior Product Manager looking for roles across Europe. Vacancies are scattered over LinkedIn, company career pages and Telegram channels, reposted by agencies and published in several countries. Lodestar collects them, throws away what a rule can reject, remembers what I have already seen, and prepares the remaining vacancies in batches for LLM evaluation. I paste each batch into a Claude Project, which returns a verdict with a reason, and the program reads the answers back.
@@ -11,15 +10,16 @@ I'm a Senior Product Manager looking for roles across Europe. Vacancies are scat
 ## Architecture
 
 ```mermaid
-flowchart LR
-    A[Collectors<br/>LinkedIn · company boards · Telegram] --> B[Rule filters<br/>title · age · country · stop-phrases · level]
-    B --> C[Dedupe<br/>same company+title+country,<br/>direct employer wins]
-    C --> D[Memory<br/>seen / decided / in tracker]
-    D --> E[Batches of 20]
-    E --> F[LLM verdict<br/>Claude Project: GO / COND / NO,<br/>match %, one-line reason]
-    F --> G[Parser]
-    G --> H[(Excel tracker)]
-    H -. decisions feed back .-> D
+flowchart TD
+    A["<b>Collect</b><br/>LinkedIn · company boards · Telegram"] --> B["<b>Rule filters</b><br/>title · age · country · stop-phrases · level"]
+    B --> C["<b>Dedupe</b><br/>company + title + country<br/>direct employer wins"]
+    C --> D["<b>Memory</b><br/>seen · decided · in tracker"]
+    D --> E["<b>Batches of 20</b>"]
+    E --> F["<b>LLM verdict</b> (Claude Project)<br/>GO / COND / NO · match % · reason"]
+    F --> G["<b>Parser</b>"]
+    G --> H[("<b>Excel tracker</b>")]
+    H -. "decisions feed back" .-> D
+    H -. "audit rejected vacancies, refine rules" .-> B
 ```
 
 ## What code decides vs. what the LLM decides
@@ -71,21 +71,9 @@ Time saved has not been measured yet. I plan to compare end-to-end processing ti
 - **Collection must be incremental.** A long LinkedIn run that hits rate limits (HTTP 429) used to lose everything. Vacancies are now written to a checkpoint file as they are collected, and Ctrl+C processes what is already there.
 - **Persistent memory prevents repeated work.** Almost half of the vacancies in a four-day window were repeats. Without memory, I would re-read them.
 
-## Screenshots
+## About this repository
 
-*[Add: funnel report · one batch of verdicts · tracker view. Blur company names if needed.]*
-
-## Run
-
-```
-py -3.12 -m src.run --profile <profile.yaml> --private <private-folder>
-py -3.12 -m src.run ... --from-raw <00_raw.jsonl>   # re-run filters without scraping
-py -3.12 -m src.run ... --verdicts answers.txt      # apply LLM verdicts
-```
-
-## Not in this repository
-
-The LinkedIn collector and my personal profile (CV facts, filters) are kept in a private repository.
+This repository is a case study: the architecture, the decisions and the numbers. The code, the LinkedIn collector and my personal profile (CV facts, filters) are kept private.
 
 ## Stack
 
